@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0f1e">
+    <link rel="manifest" href="manifest.json">
+    <title>Gravity Bounce · Ambus Multiverse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* for smoother game interaction */
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060c);
+            min-height: 100vh;
+            color: #eef4ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* main game hub panel */
+        .ambus-container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(12, 20, 35, 0.55);
+            backdrop-filter: blur(8px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            border: 1px solid rgba(90, 150, 220, 0.3);
+            transition: all 0.2s;
+        }
+
+        /* header */
+        .game-header {
+            text-align: center;
+            padding: 20px 20px 10px;
+            background: rgba(0,0,0,0.4);
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+        }
+        .game-header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #aaffff, #ffd966);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(0,255,255,0.3);
+        }
+        .game-header p {
+            color: #b9d9ff;
+            font-weight: 500;
+        }
+
+        /* tab bar */
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 24px 0 24px;
+            background: rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: rgba(30,40,60,0.8);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #ccdeff;
+            cursor: pointer;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .tab-btn.active {
+            background: linear-gradient(95deg, #2a6f9c, #1e3a6b);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,160,255,0.3);
+            border-bottom: 2px solid cyan;
+        }
+        .tab-btn:hover {
+            background: #2f4b7c;
+            transform: translateY(-2px);
+        }
+
+        /* content panel */
+        .tab-pane {
+            display: none;
+            padding: 28px 24px;
+            animation: fadeSlide 0.25s ease;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* common cards & forms */
+        .glass-card {
+            background: rgba(20, 30, 55, 0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 28px;
+            padding: 24px;
+            border: 1px solid rgba(72, 187, 255, 0.3);
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #caf0ff;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0e1a2a;
+            border: 1px solid #2c4c7c;
+            border-radius: 28px;
+            color: white;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3cc7ff;
+            box-shadow: 0 0 0 2px rgba(60,199,255,0.3);
+        }
+        button {
+            background: #2c5a8c;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+        }
+        button.primary {
+            background: linear-gradient(95deg, #0f5c9e, #1e3c6c);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        button.warning {
+            background: #aa3e3e;
+        }
+        button.success {
+            background: #227722;
+        }
+        button:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.4);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2f4b6e;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 30px;
+            margin: 15px 0;
+            display: none;
+            font-weight: 500;
+        }
+        .message.success { background: #1e4620; border-left: 6px solid #6fcf97; display: block; }
+        .message.error { background: #631c1c; border-left: 6px solid #ff8585; display: block; }
+        .message.info { background: #1e476b; border-left: 6px solid #5bc0ff; display: block; }
+
+        /* gravity canvas */
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        canvas {
+            background: #0a0f1c;
+            border-radius: 28px;
+            box-shadow: 0 8px 20px black;
+            border: 2px solid #20b2ff;
+            max-width: 100%;
+        }
+        .stats-badge {
+            background: #07121f;
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        html, body {
+            min-height: 100%;
+        }
+        body {
+            padding: 12px;
+        }
+        .ambus-container {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+        }
+        button {
+            min-height: 48px;
+            touch-action: manipulation;
+        }
+
+        @media (max-width: 900px) {
+            .game-header h1 { font-size: 2rem; }
+            .tab-bar { padding: 12px 16px 0 16px; }
+            .glass-card { padding: 18px; }
+        }
+
+        @media (max-width: 700px) {
+            .tab-bar {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px 14px 0 14px;
+            }
+            .tab-btn {
+                padding: 14px 16px;
+                font-size: 0.95rem;
+                width: 100%;
+            }
+            .tab-pane {
+                padding: 16px 14px;
+            }
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .button-group button {
+                width: 100%;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-badge {
+                width: 100%;
+                text-align: center;
+            }
+            .game-header {
+                padding: 16px 16px 10px;
+            }
+            .ambus-container {
+                border-radius: 24px;
+            }
+            #loginCard, #instrCard {
+                width: 95%;
+                padding: 20px;
+            }
+            #loginCard .link-row {
+                gap: 12px;
+            }
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            padding: 12px;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        /* login overlay for simple offline-capable auth */
+        #loginOverlay {
+            position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); z-index: 9999;
+        }
+        #loginCard { width: 92%; max-width: 420px; background: radial-gradient(circle at top, rgba(16, 40, 90, 0.95), rgba(2, 8, 18, 0.98) 55%), linear-gradient(135deg, rgba(255, 22, 210, 0.12), rgba(30, 255, 255, 0.1)); border-radius: 22px; padding: 28px 24px; box-shadow: 0 0 45px rgba(69, 255, 255, 0.12), inset 0 0 18px rgba(255, 22, 210, 0.12); border: 1px solid rgba(76, 246, 255, 0.35); }
+        #loginCard h2 { margin: 10px 0 8px; color: #41f6ff; font-size: 1.4rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        #loginCard h3 { margin: 0 0 20px; color: #ff4df7; letter-spacing: 0.2em; text-transform: uppercase; }
+        #loginCard .welcome-title { margin-bottom: 20px; color: #6bf0ff; font-size: 0.95rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        #loginCard input { margin-bottom:18px; }
+        #loginCard label { font-size: 0.82rem; letter-spacing: 0.18em; color: #7be5ff; }
+        #loginCard .login-button { width: 100%; padding: 14px 16px; font-size: 1rem; letter-spacing: 0.18em; }
+        #loginCard .link-row { display:flex; flex-direction: column; gap: 10px; margin-top: 18px; text-align: center; font-size: 0.85rem; color: #7be5ff; }
+        #loginCard .link-row button { background: none; border: none; color: #ff6bff; cursor: pointer; text-transform: uppercase; letter-spacing: 0.12em; }
+        #loginCard .link-row span { color: #61d6ff; }
+        #loginCard .link-btn { background: transparent; border: 1px solid rgba(255,107,255,0.4); border-radius: 12px; padding: 10px 14px; color: #ff86ff; }
+        #loginCard .link-btn:hover { box-shadow: 0 0 16px rgba(255,107,255,0.25); }
+        #dashboardPanel { margin: 20px auto; max-width: 760px; display:none; padding: 24px 20px; border: 2px solid rgba(62, 222, 255, 0.45); background: radial-gradient(circle, rgba(14,18,38,0.95), rgba(4,7,16,0.96)); box-shadow: 0 0 30px rgba(20,255,255,0.08); }
+        #dashboardPanel h2 { margin-bottom: 6px; font-size: 2rem; color: #41f6ff; letter-spacing: 0.24em; text-transform: uppercase; text-shadow: 0 0 18px rgba(65,246,255,0.45); }
+        #dashboardPanel p { margin: 0 0 22px; color: #f46bff; font-size: 0.92rem; letter-spacing: 0.18em; text-transform: uppercase; }
+        #dashboardPanel .dashboard-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:16px; justify-items:center; align-items:center; margin-bottom: 18px; }
+        #dashboardPanel .dashboard-grid button,
+        #dashboardPanel .dashboard-grid select { min-width: 160px; padding: 14px 16px; border-radius: 16px; background: rgba(3,10,22,0.9); border: 1px solid rgba(70,255,245,0.35); color: #d8f9ff; font-weight: bold; letter-spacing: 0.12em; cursor: pointer; }
+        #dashboardPanel .dashboard-grid button:hover,
+        #dashboardPanel .dashboard-grid select:hover { box-shadow: 0 0 12px rgba(97,223,255,0.25); }
+        .retro-title { letter-spacing: 0.3em; text-transform: uppercase; color: #3ef2ff; text-shadow: 0 0 18px rgba(62,242,255,0.5), 0 0 30px rgba(254,55,255,0.2); }
+        .retro-subtitle { letter-spacing: 0.28em; text-transform: uppercase; color: #ff52d5; text-shadow: 0 0 20px rgba(255,82,213,0.3); margin-bottom: 24px; }
+        .cyber-input { background: rgba(2,8,18,0.95); border: 1px solid #29f1ff; box-shadow: inset 0 0 15px rgba(0,255,255,0.06); color: #c0f5ff; }
+        .cyber-input::placeholder { color: #7de3ff; opacity: 0.6; }
+        .neon-btn { background: linear-gradient(135deg, rgba(53,250,255,0.18), rgba(255,50,163,0.18)); border: 1px solid rgba(55,255,255,0.4); color: #d9f8ff; }
+        .neon-btn:hover { box-shadow: 0 0 20px rgba(54,255,255,0.3), 0 0 30px rgba(255,79,176,0.2); }
+        /* instructions overlay */
+        #instrOverlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.7); z-index: 10000; }
+        #instrCard { width: 92%; max-width: 720px; background: rgba(8,12,20,0.98); border-radius:16px; padding:20px; }
+    </style>
+</head>
+<body>
+<div id="loginOverlay" style="display:none;">
+    <div id="loginCard">
+        <div class="retro-title">GRAVITY BOUNCE</div>
+        <div class="retro-subtitle">SUPER BOUNCE EDITION</div>
+        <h3>WELCOME BACK</h3>
+        <div class="form-group">
+            <label for="loginUser">USERNAME</label>
+            <input id="loginUser" class="cyber-input" type="text" placeholder="ENTER USERNAME">
+        </div>
+        <div class="form-group">
+            <label for="loginPass">PASSWORD</label>
+            <input id="loginPass" class="cyber-input" type="password" placeholder="ENTER PASSWORD">
+        </div>
+        <button id="loginBtn" class="primary neon-btn login-button">&gt; LOGIN</button>
+        <div class="link-row">
+            <span>Don’t have an account? <button id="createBtn" class="link-btn">CREATE ONE</button></span>
+            <button id="guestBtn" class="link-btn">&gt; PLAY AS GUEST</button>
+        </div>
+    </div>
+</div> 
+<div id="instrOverlay"><div id="instrCard" class="glass-card"><h3>How to play</h3><p>Controls: ← → move paddle. Press <strong>SPACE</strong> to launch the ball. Break all bricks to advance levels. Collect powerups for abilities (MULTI, GIANT, LASER). Press <strong>P</strong> to pause. On mobile, tap left/right sides to move the paddle.</p><div style="text-align:right;margin-top:12px;"><button id="closeInstrBtn" class="primary">Close</button></div></div></div>
+<div class="ambus-container">
+    <div class="game-header">
+        <h1>⚡ GRAVITY BOUNCE ⚡</h1>
+        <p>✦ AMBUS EDITION · SUPER BOUNCE + DATA HUB ✦</p>
+    </div>
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="game">🎮 GRAVITY BOUNCE</button>
+        <button class="tab-btn" data-tab="activity">📋 ACTIVITY LOG</button>
+        <button class="tab-btn" data-tab="gravitylab">🌌 GRAVITY LAB</button>
+        <button class="tab-btn" data-tab="stats">📊 STATS & DATA</button>
+    </div>
+    <div id="dashboardPanel" class="glass-card">
+        <div class="retro-title">GRAVITY BOUNCE</div>
+        <div class="retro-subtitle">SUPER BOUNCE EDITION</div>
+        <h3>WELCOME, GUEST!</h3>
+        <div class="dashboard-grid">
+            <button id="dashPlayBtn" class="primary neon-btn">PLAY</button>
+            <div style="width:100%; display:flex; justify-content:center;"><select id="dashLevelSelect"><option value="0">EASY</option><option value="1">MEDIUM</option><option value="2">HARD</option></select></div>
+            <button id="dashInstrBtn" class="primary neon-btn">INSTRUCTIONS</button>
+            <button id="dashStatsBtn" class="primary neon-btn">STATISTICS</button>
+            <button id="dashLogout" class="primary neon-btn">LOGOUT</button>
+        </div>
+        <div style="margin-top:16px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <span class="stats-badge">High Score: <span id="dashHighScore">0</span></span>
+            <span class="stats-badge">Total Games: <span id="dashTotalGames">0</span></span>
+            <span class="stats-badge">Best Combo: <span id="dashBestCombo">0</span></span>
+        </div>
+    </div>
+
+    <!-- ========== GAME TAB (BOUNCE BRICKS) ========== -->
+    <div id="gameTab" class="tab-pane active">
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                <div><span class="stats-badge">💥 SCORE: <span id="gameScore">0</span></span></div>
+                <div><span class="stats-badge">❤️ LIVES: <span id="gameLives">3</span></span></div>
+                <div><span class="stats-badge">🔥 COMBO: <span id="gameCombo">0</span></span></div>
+                <div><span class="stats-badge">⚡ LVL: <span id="gameLevel">EASY</span></span></div>
+            </div>
+            <canvas id="gameCanvas" width="900" height="520" style="width:100%; height:auto; background:#010314; border-radius: 20px;"></canvas>
+            <div class="button-group" style="margin-top: 20px; justify-content: center;">
+                <button id="launchBtn" class="primary">🚀 LAUNCH BALL</button>
+                <button id="resetGameBtn">🔄 RESET GAME</button>
+                <button id="backToMenuButton" class="warning">← BACK TO MENU</button>
+                <button id="nextLevelBtn">➡️ NEXT LVL (EASY→HARD)</button>
+            </div>
+            <div class="info-box" style="margin-top: 15px; font-size:0.85rem; background:#0f1a2b; border-radius: 20px; padding: 12px;">
+                💡 CONTROLS: ← → move paddle | SPACE = launch / shoot laser (if laser active) | P = pause (simulated)
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== ACTIVITY LOG (main data mgmt) ========== -->
+    <div id="activityTab" class="tab-pane">
+        <div class="glass-card">
+            <h3>📝 New Activity (Bounce Session / Note)</h3>
+            <div id="actMessage" class="message"></div>
+            <form id="activityForm">
+                <div class="form-group"><label>Activity name</label><input type="text" id="actName" placeholder="e.g., Hyper Bounce" required></div>
+                <div class="form-group"><label>Type</label><select id="actType"><option>Game session</option><option>Practice</option><option>Highscore run</option></select></div>
+                <div class="form-group"><label>Date</label><input type="date" id="actDate"></div>
+                <div class="form-group"><label>Description</label><textarea id="actDesc" rows="2" placeholder="Awesome combo!"></textarea></div>
+                <div class="button-group"><button type="submit" class="primary">💾 Save Activity</button><button type="button" id="refreshActBtn">🔄 Refresh List</button></div>
+            </form>
+        </div>
+        <div class="glass-card">
+            <h3>📜 Your Activities</h3>
+            <div id="activitiesListContainer">✨ Loading ...</div>
+        </div>
+    </div>
+
+    <!-- ========== GRAVITY LAB (physics sandbox) ========== -->
+    <div id="gravitylabTab" class="tab-pane">
+        <div class="glass-card">
+            <h3>🌠 Real-time Gravity Simulator</h3>
+            <div class="gravity-controls" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px;">
+                <div><label>⚙️ Gravity</label><input type="range" id="gravStrength" min="0.1" max="1.5" step="0.02" value="0.55"></div>
+                <div><label>⚡ Bounce</label><input type="range" id="bounceElastic" min="0.4" max="1.0" step="0.02" value="0.82"></div>
+                <div><label>🌀 Friction</label><input type="range" id="fricVal" min="0.96" max="1.0" step="0.002" value="0.987"></div>
+                <div><label>🔴 Radius</label><input type="range" id="ballRad" min="8" max="28" value="16"></div>
+                <div><button id="startSimBtn" class="primary">▶ START</button><button id="stopSimBtn">⏹️ STOP</button><button id="resetSimBtn">🔄 RESET</button></div>
+            </div>
+            <canvas id="labCanvas" width="850" height="380" style="width:100%; background:#020617; border-radius: 28px;"></canvas>
+            <div id="simStats" class="stats-badge" style="margin-top: 12px; display: inline-block;">⚡ Ready</div>
+        </div>
+    </div>
+
+    <!-- ========== DATA STATS & EXPORT ========== -->
+    <div id="statsTab" class="tab-pane">
+        <div class="glass-card">
+            <h3>📀 Persistent Storage & Export</h3>
+            <div id="statsMsg" class="message"></div>
+            <div class="button-group">
+                <button id="exportDataBtn" class="success">📥 EXPORT ALL DATA (JSON)</button>
+                <button id="importDataBtn" class="primary">📤 IMPORT DATA</button>
+                <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                <button id="clearAllDataBtn" class="warning">🗑️ CLEAR ALL ACTIVITIES</button>
+            </div>
+            <hr style="margin: 20px 0; border-color:#2f5170;">
+            <h3>🏆 Game Statistics (local profile)</h3>
+            <div><strong>High Score:</strong> <span id="highScoreStat">0</span> &nbsp;|&nbsp; <strong>Total Games:</strong> <span id="totalGamesStat">0</span> &nbsp;|&nbsp; <strong>Best Combo:</strong> <span id="bestComboStat">0</span></div>
+            <div id="allDataTable" style="margin-top: 28px; max-height: 320px; overflow-y: auto;"></div>
+        </div>
+    </div>
+    <footer>⚡ gravity bounce · offline data (IndexedDB) · ambus ultimate edition</footer>
+</div>
+
+<script>
+    // ---------- GLOBAL DATA LAYER (IndexedDB + stats) ----------
+    const DB_NAME = 'AmbusBounceDB';
+    const STORE_ACT = 'activities';
+    let db = null;
+
+    // game profile stats (sync with user_data.json spirit)
+    let gameProfile = {
+        highScore: 0,
+        totalGames: 0,
+        bestCombo: 0,
+    };
+
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, 2);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = (e) => { db = e.target.result; resolve(db); };
+            request.onupgradeneeded = (e) => {
+                const dbInst = e.target.result;
+                if (!dbInst.objectStoreNames.contains(STORE_ACT)) {
+                    dbInst.createObjectStore(STORE_ACT, { keyPath: 'id', autoIncrement: true });
+                }
+            };
+        });
+    }
+
+    async function saveActivity(activity) {
+        const tx = db.transaction([STORE_ACT], 'readwrite');
+        const store = tx.objectStore(STORE_ACT);
+        return store.add(activity);
+    }
+
+    async function getAllActivities() {
+        const tx = db.transaction([STORE_ACT], 'readonly');
+        const store = tx.objectStore(STORE_ACT);
+        return new Promise((res) => { const req = store.getAll(); req.onsuccess = () => res(req.result); });
+    }
+
+    async function deleteActivityById(id) {
+        const tx = db.transaction([STORE_ACT], 'readwrite');
+        const store = tx.objectStore(STORE_ACT);
+        return store.delete(id);
+    }
+
+    async function clearAllActivities() {
+        const tx = db.transaction([STORE_ACT], 'readwrite');
+        const store = tx.objectStore(STORE_ACT);
+        return store.clear();
+    }
+
+    // load stored profile from localStorage (cross-session)
+    function loadProfile() {
+        const stored = localStorage.getItem('gravityBounceProfile');
+        if(stored) {
+            try {
+                let prof = JSON.parse(stored);
+                gameProfile.highScore = prof.highScore || 0;
+                gameProfile.totalGames = prof.totalGames || 0;
+                gameProfile.bestCombo = prof.bestCombo || 0;
+            } catch(e) {}
+        }
+        updateStatsUI();
+    }
+    function saveProfile() {
+        localStorage.setItem('gravityBounceProfile', JSON.stringify(gameProfile));
+        // if a user is logged in, save profile to their account record
+        try {
+            const cur = JSON.parse(localStorage.getItem('ambusUser') || 'null');
+            if(cur && cur.user) {
+                const users = JSON.parse(localStorage.getItem('ambusUsers') || '{}');
+                if(users[cur.user]) { users[cur.user].profile = gameProfile; localStorage.setItem('ambusUsers', JSON.stringify(users)); }
+            }
+        } catch(e){}
+        updateStatsUI();
+    }
+    function updateStatsUI() {
+        document.getElementById('highScoreStat').innerText = gameProfile.highScore;
+        document.getElementById('totalGamesStat').innerText = gameProfile.totalGames;
+        document.getElementById('bestComboStat').innerText = gameProfile.bestCombo;
+    }
+    function updateGameStats(score, combo) {
+        if(score > gameProfile.highScore) gameProfile.highScore = score;
+        if(combo > gameProfile.bestCombo) gameProfile.bestCombo = combo;
+        saveProfile();
+    }
+
+    // -------- GAME BOUNCE LOGIC (Brick Breaker) --------
+    const canvasGame = document.getElementById('gameCanvas');
+    let ctx = canvasGame.getContext('2d');
+    let gameState = { score:0, lives:3, combo:0, maxCombo:0, level:0, playing:false, balls:[], bricks:[], powerups:[], paddle:{x:0, y:0, width:140, height:18, laserActive:false, lasers:[]}, powerUpActive:null, powerUpTimer:0 };
+    let animationId = null;
+    let gameRunning = false;
+    let keys = { left: false, right: false };
+    let ballAttached = true;
+
+    function resizeGameCanvas() { canvasGame.width = Math.min(900, window.innerWidth-40); canvasGame.height = 520; }
+    window.addEventListener('resize', () => { resizeGameCanvas(); if(gameRunning) drawGame(); });
+    resizeGameCanvas();
+
+    // levels
+    const levels = [
+        { name:"EASY", rows:3, cols:6, brickHP:1, speedX:4.2, speedY:-5.5, color:"#2ecc71" },
+        { name:"MEDIUM", rows:4, cols:8, brickHP:2, speedX:5.8, speedY:-6.8, color:"#f1c40f" },
+        { name:"HARD", rows:5, cols:10, brickHP:3, speedX:7.2, speedY:-8.0, color:"#e74c3c" }
+    ];
+    let currentLevel = 0;
+
+    function initGameLevel() {
+        const lvl = levels[currentLevel];
+        gameState.bricks = [];
+        const startX = (canvasGame.width - (lvl.cols * 68)) / 2;
+        for(let row=0; row<lvl.rows; row++) {
+            for(let col=0; col<lvl.cols; col++) {
+                let hp = lvl.brickHP;
+                gameState.bricks.push({
+                    x: startX + col*68, y: 70 + row*28, w:62, h:22, hp: hp, maxHp:hp, points: 100*hp,
+                    color: lvl.color
+                });
+            }
+        }
+        gameState.paddle.x = canvasGame.width/2 - gameState.paddle.width/2;
+        gameState.paddle.y = canvasGame.height - 45;
+        ballAttached = true;
+        gameState.balls = [{ x: gameState.paddle.x + gameState.paddle.width/2 - 12, y: gameState.paddle.y-18, vx:0, vy:0, radius:12, attached:true, superBounce:false, giant:false }];
+        gameState.combo = 0; gameState.maxCombo = 0; gameState.score = 0;
+        gameState.powerUpActive = null; gameState.powerUpTimer = 0; gameState.paddle.lasers = [];
+        document.getElementById('gameScore').innerText = gameState.score;
+        document.getElementById('gameLives').innerText = gameState.lives;
+        document.getElementById('gameCombo').innerText = gameState.combo;
+        document.getElementById('gameLevel').innerText = levels[currentLevel].name;
+    }
+
+    function resetGame() {
+        gameState.lives = 3;
+        gameState.score = 0;
+        currentLevel = 0;
+        initGameLevel();
+        drawGame();
+        document.getElementById('gameScore').innerText = "0";
+        document.getElementById('gameLives').innerText = "3";
+        document.getElementById('gameCombo').innerText = "0";
+    }
+
+    function launchBall() {
+        if(ballAttached && gameState.balls.length) {
+            let lvl = levels[currentLevel];
+            let speedX = lvl.speedX * (Math.random() > 0.5 ? 1 : -1);
+            gameState.balls[0].vx = speedX;
+            gameState.balls[0].vy = lvl.speedY;
+            gameState.balls[0].attached = false;
+            ballAttached = false;
+        } else if(gameState.powerUpActive === 'LASER') {
+            gameState.paddle.lasers.push({ x: gameState.paddle.x + gameState.paddle.width/2 - 3, y: gameState.paddle.y, w:5, h:18 });
+        }
+    }
+
+    function updateGame() {
+        if(!gameRunning) return;
+        // paddle move
+        if(keys.left) gameState.paddle.x = Math.max(0, gameState.paddle.x - 9);
+        if(keys.right) gameState.paddle.x = Math.min(canvasGame.width - gameState.paddle.width, gameState.paddle.x + 9);
+        // lasers
+        for(let i=0;i<gameState.paddle.lasers.length;i++) {
+            gameState.paddle.lasers[i].y -= 7;
+            if(gameState.paddle.lasers[i].y < 0) { gameState.paddle.lasers.splice(i,1); i--; continue; }
+            for(let b=0;b<gameState.bricks.length;b++) {
+                let brick = gameState.bricks[b];
+                if(gameState.paddle.lasers[i].x < brick.x+brick.w && gameState.paddle.lasers[i].x+5 > brick.x && gameState.paddle.lasers[i].y < brick.y+brick.h && gameState.paddle.lasers[i].y+18 > brick.y) {
+                    brick.hp--; gameState.paddle.lasers.splice(i,1);
+                    if(brick.hp <=0) { gameState.bricks.splice(b,1); gameState.score += brick.points; document.getElementById('gameScore').innerText = gameState.score; }
+                    break;
+                }
+            }
+        }
+        // ball updates
+        for(let i=0;i<gameState.balls.length;i++) {
+            let b = gameState.balls[i];
+            if(b.attached) {
+                b.x = gameState.paddle.x + gameState.paddle.width/2 - b.radius;
+                b.y = gameState.paddle.y - 12;
+                continue;
+            }
+            b.x += b.vx; b.y += b.vy;
+            // boundaries
+            if(b.x - b.radius <= 0) { b.x = b.radius; b.vx = -b.vx; }
+            if(b.x + b.radius >= canvasGame.width) { b.x = canvasGame.width - b.radius; b.vx = -b.vx; }
+            if(b.y - b.radius <= 0) { b.y = b.radius; b.vy = -b.vy; }
+            if(b.y + b.radius >= canvasGame.height) {
+                gameState.balls.splice(i,1); i--;
+                gameState.lives--;
+                document.getElementById('gameLives').innerText = gameState.lives;
+                gameState.combo = 0; document.getElementById('gameCombo').innerText = "0";
+                if(gameState.lives <= 0) { gameRunning=false; alert("GAME OVER! Score: "+gameState.score); gameProfile.totalGames++; updateGameStats(gameState.score, gameState.maxCombo); saveProfile(); resetGame(); gameRunning=true; }
+                else if(gameState.balls.length===0) {
+                    ballAttached=true;
+                    gameState.balls.push({ x: gameState.paddle.x + gameState.paddle.width/2 - 12, y: gameState.paddle.y-18, vx:0, vy:0, radius:12, attached:true });
+                }
+                continue;
+            }
+            // paddle collision
+            if(b.y+b.radius >= gameState.paddle.y && b.y-b.radius <= gameState.paddle.y+gameState.paddle.height && b.x+b.radius > gameState.paddle.x && b.x-b.radius < gameState.paddle.x+gameState.paddle.width && b.vy>0) {
+                let hitPos = (b.x - gameState.paddle.x) / gameState.paddle.width;
+                let angle = (hitPos - 0.5) * 1.4;
+                b.vx = angle * 7;
+                b.vy = -Math.abs(b.vy);
+                gameState.combo++;
+                if(gameState.combo>gameState.maxCombo) gameState.maxCombo = gameState.combo;
+                document.getElementById('gameCombo').innerText = gameState.combo;
+            }
+            // bricks collision
+            for(let j=0;j<gameState.bricks.length;j++) {
+                let brick = gameState.bricks[j];
+                if(b.x+b.radius > brick.x && b.x-b.radius < brick.x+brick.w && b.y+b.radius > brick.y && b.y-b.radius < brick.y+brick.h) {
+                    let overlapL = (b.x+b.radius - brick.x);
+                    let overlapR = (brick.x+brick.w - (b.x-b.radius));
+                    let overlapT = (b.y+b.radius - brick.y);
+                    let overlapB = (brick.y+brick.h - (b.y-b.radius));
+                    let min = Math.min(overlapL,overlapR,overlapT,overlapB);
+                    if(min===overlapL || min===overlapR) b.vx = -b.vx;
+                    else b.vy = -b.vy;
+                    brick.hp--;
+                    if(brick.hp <=0) {
+                        gameState.bricks.splice(j,1);
+                        let pointsGain = brick.points * (1 + gameState.combo*0.1);
+                        gameState.score += Math.floor(pointsGain);
+                        document.getElementById('gameScore').innerText = gameState.score;
+                        // random powerup
+                        if(Math.random()<0.25) {
+                            let types = ['SLOW','GIANT','MULTI','LASER'];
+                            gameState.powerups.push({ x: brick.x+brick.w/2-12, y: brick.y, type: types[Math.floor(Math.random()*types.length)], w:20, h:20 });
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        // powerups collection
+        for(let i=0;i<gameState.powerups.length;i++) {
+            let p = gameState.powerups[i];
+            p.y += 3;
+            if(p.y > canvasGame.height) { gameState.powerups.splice(i,1); continue; }
+            if(p.x+20 > gameState.paddle.x && p.x < gameState.paddle.x+gameState.paddle.width && p.y+20 > gameState.paddle.y && p.y < gameState.paddle.y+gameState.paddle.height) {
+                if(p.type === 'LASER') gameState.powerUpActive = 'LASER';
+                else if(p.type === 'MULTI') { if(gameState.balls.length<4) gameState.balls.push({ ...gameState.balls[0], attached:false, vx: (gameState.balls[0].vx+3), vy:gameState.balls[0].vy-2 }); }
+                else if(p.type === 'GIANT') { for(let ball of gameState.balls) ball.radius = 20; }
+                gameState.powerups.splice(i,1);
+            }
+        }
+        if(gameState.bricks.length===0) {
+            currentLevel = Math.min(currentLevel+1, 2);
+            initGameLevel();
+            drawGame();
+        }
+        drawGame();
+    }
+
+    function drawGame() {
+        if(!ctx) return;
+        ctx.clearRect(0,0,canvasGame.width, canvasGame.height);
+        ctx.fillStyle = "#03051a";
+        ctx.fillRect(0,0,canvasGame.width, canvasGame.height);
+        // bricks
+        for(let b of gameState.bricks) {
+            ctx.fillStyle = b.color;
+            ctx.shadowBlur=4;
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.fillStyle = "white";
+            if(b.maxHp>1) ctx.fillText("❤️".repeat(b.hp), b.x+5, b.y+18);
+        }
+        // paddle
+        ctx.fillStyle = gameState.powerUpActive==='LASER' ? "#f39c12" : "#3498db";
+        ctx.fillRect(gameState.paddle.x, gameState.paddle.y, gameState.paddle.width, gameState.paddle.height);
+        ctx.fillStyle = "cyan";
+        for(let l of gameState.paddle.lasers) ctx.fillRect(l.x,l.y, l.w, l.h);
+        // balls
+        for(let ball of gameState.balls) {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+            ctx.fillStyle = ball.superBounce ? "gold" : "#ffaa66";
+            ctx.fill();
+        }
+        for(let p of gameState.powerups) {
+            ctx.fillStyle = "#dd44ff"; ctx.fillRect(p.x,p.y,20,20);
+            ctx.fillStyle="white"; ctx.font="bold 12px monospace"; ctx.fillText(p.type[0], p.x+6, p.y+16);
+        }
+        ctx.shadowBlur=0;
+    }
+
+    // Animation loop
+    function gameLoop() { if(gameRunning) { updateGame(); requestAnimationFrame(gameLoop); } }
+    function startGameLoop() { gameRunning=true; gameLoop(); }
+    function stopGameLoop() { gameRunning=false; }
+
+    // keyboard listeners
+    window.addEventListener('keydown', (e) => {
+        if(e.key === 'ArrowLeft') keys.left=true;
+        if(e.key === 'ArrowRight') keys.right=true;
+        if(e.key === ' ') { e.preventDefault(); launchBall(); }
+        if(e.key === 'r') resetGame();
+    });
+    window.addEventListener('keyup', (e) => {
+        if(e.key === 'ArrowLeft') keys.left=false;
+        if(e.key === 'ArrowRight') keys.right=false;
+    });
+
+    // ------ GRAVITY LAB SIMULATION ------
+    let labCanvas = document.getElementById('labCanvas'), labCtx = labCanvas.getContext('2d');
+    let labBalls = [], labAnim = null;
+    function initLabBalls() {
+        let radius = parseInt(document.getElementById('ballRad').value);
+        let count = 6;
+        labBalls = [];
+        for(let i=0;i<count;i++) {
+            labBalls.push({
+                x: Math.random()*(labCanvas.width-2*radius)+radius,
+                y: Math.random()*200+30,
+                vx: (Math.random()-0.5)*4,
+                vy: (Math.random())*2,
+                rad: radius
+            });
+        }
+    }
+    function updateLab() {
+        let G = parseFloat(document.getElementById('gravStrength').value);
+        let bounce = parseFloat(document.getElementById('bounceElastic').value);
+        let friction = parseFloat(document.getElementById('fricVal').value);
+        for(let b of labBalls) {
+            b.vy += G;
+            b.vx *= friction;
+            b.x += b.vx;
+            b.y += b.vy;
+            if(b.y + b.rad >= labCanvas.height) { b.y = labCanvas.height - b.rad; b.vy = -b.vy * bounce; if(Math.abs(b.vy)<0.2) b.vy=0; }
+            if(b.x - b.rad <= 0) { b.x = b.rad; b.vx = -b.vx * bounce; }
+            if(b.x + b.rad >= labCanvas.width) { b.x = labCanvas.width - b.rad; b.vx = -b.vx * bounce; }
+            if(b.y - b.rad <=0) { b.y = b.rad; b.vy = -b.vy * bounce; }
+        }
+        labCtx.fillStyle = "#01001c";
+        labCtx.fillRect(0,0,labCanvas.width,labCanvas.height);
+        for(let b of labBalls) {
+            labCtx.beginPath();
+            labCtx.arc(b.x,b.y,b.rad,0,Math.PI*2);
+            labCtx.fillStyle = "#66ccff";
+            labCtx.fill();
+        }
+        document.getElementById('simStats').innerHTML = `🌠 balls:${labBalls.length}  |  gravity:${G.toFixed(2)}  bounce:${bounce.toFixed(2)}`;
+    }
+    function startLabAnim() { if(labAnim) cancelAnimationFrame(labAnim); function step(){ updateLab(); labAnim = requestAnimationFrame(step); } step(); }
+    function stopLabAnim() { if(labAnim) cancelAnimationFrame(labAnim); labAnim=null; }
+
+    // ----- UI & DATA MANAGEMENT ------
+    async function renderActivities() {
+        let acts = await getAllActivities();
+        let html = `<table class="data-table"><tr><th>Name</th><th>Type</th><th>Date</th><th>Desc</th><th>Action</th></tr>`;
+        for(let a of acts) {
+            html += `<tr><td>${a.name}</td><td>${a.type}</td><td>${a.date}</td><td>${a.desc?.substring(0,30)}</td><td><button onclick="deleteAct(${a.id})">❌</button></td></tr>`;
+        }
+        html += `</table>`;
+        document.getElementById('activitiesListContainer').innerHTML = acts.length ? html : "<p>✨ No activities yet. Create one!</p>";
+        let allActs = await getAllActivities();
+        document.getElementById('allDataTable').innerHTML = `<strong>📋 All stored records: ${allActs.length}</strong><br>` + html;
+    }
+    window.deleteAct = async (id) => { await deleteActivityById(id); await renderActivities(); showMsg('actMessage','Deleted','success'); };
+    document.getElementById('activityForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let newAct = { name: document.getElementById('actName').value, type: document.getElementById('actType').value, date: document.getElementById('actDate').value || new Date().toISOString().slice(0,10), desc: document.getElementById('actDesc').value, timestamp: Date.now() };
+        await saveActivity(newAct);
+        showMsg('actMessage','Activity saved!','success');
+        document.getElementById('activityForm').reset();
+        await renderActivities();
+    });
+    document.getElementById('refreshActBtn').onclick = async () => { await renderActivities(); };
+    document.getElementById('exportDataBtn').onclick = async () => {
+        let acts = await getAllActivities();
+        let exportObj = { activities: acts, profile: gameProfile, exportDate: new Date().toISOString() };
+        let dataStr = JSON.stringify(exportObj);
+        let blob = new Blob([dataStr], {type:'application/json'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a'); a.href=url; a.download=`ambus_data.json`; a.click(); URL.revokeObjectURL(url);
+        showMsg('statsMsg','Data exported','success');
+    };
+    document.getElementById('importDataBtn').onclick = () => { document.getElementById('importFileInput').click(); };
+    document.getElementById('importFileInput').onchange = async (e) => {
+        let file = e.target.files[0]; if(!file) return;
+        let text = await file.text();
+        let data = JSON.parse(text);
+        if(data.activities) for(let act of data.activities) delete act.id, await saveActivity(act);
+        if(data.profile) { gameProfile.highScore = data.profile.highScore || 0; gameProfile.totalGames = data.profile.totalGames || 0; gameProfile.bestCombo = data.profile.bestCombo || 0; saveProfile(); }
+        await renderActivities();
+        showMsg('statsMsg','Import success!','success');
+    };
+    document.getElementById('clearAllDataBtn').onclick = async () => { if(confirm('Delete ALL activities?')) { await clearAllActivities(); await renderActivities(); showMsg('statsMsg','All cleared','info'); } };
+    function showMsg(el, txt, type) { let msgDiv = document.getElementById(el); msgDiv.innerText = txt; msgDiv.className = `message ${type}`; setTimeout(()=> msgDiv.style.display='none', 2500); msgDiv.style.display='block'; }
+
+    // tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            let target = btn.getAttribute('data-tab');
+            document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+            if(target==='game') document.getElementById('gameTab').classList.add('active');
+            if(target==='activity') document.getElementById('activityTab').classList.add('active');
+            if(target==='gravitylab') document.getElementById('gravitylabTab').classList.add('active');
+            if(target==='stats') document.getElementById('statsTab').classList.add('active');
+            if(target==='gravitylab') { if(labCanvas.width===0) { labCanvas.width = Math.min(850, window.innerWidth-60); labCanvas.height = 380; initLabBalls(); startLabAnim(); } else startLabAnim(); }
+            else stopLabAnim();
+        });
+    });
+    document.getElementById('startSimBtn').onclick = () => { if(!labAnim) startLabAnim(); };
+    document.getElementById('stopSimBtn').onclick = () => stopLabAnim();
+    document.getElementById('resetSimBtn').onclick = () => { initLabBalls(); updateLab(); };
+    document.getElementById('resetGameBtn').onclick = () => { resetGame(); gameRunning=true; if(!animationId) startGameLoop(); };
+    document.getElementById('backToMenuButton').onclick = () => { stopGameLoop(); gameRunning = false; updateDashboardForUser(); };
+    document.getElementById('nextLevelBtn').onclick = () => { currentLevel = (currentLevel+1)%3; initGameLevel(); drawGame(); };
+    document.getElementById('launchBtn').onclick = () => launchBall();
+
+    async function startApp() {
+        await initDB();
+        loadProfile();
+        await renderActivities();
+        resizeGameCanvas();
+        initGameLevel();
+        drawGame();
+        gameRunning = false; // start when user chooses Play from dashboard
+        // gravity lab defaults
+        labCanvas.width = 850; labCanvas.height=380;
+        initLabBalls();
+        setInterval(()=> updateGameStats(gameState.score, gameState.maxCombo), 2000);
+    }
+    startApp();
+
+    // --- PWA: register service worker for offline support ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.warn('SW register failed', err));
+        });
+    }
+
+    // --- Account & Login (offline-capable local accounts) ---
+    function showLoginOverlay(show) { document.getElementById('loginOverlay').style.display = show ? 'flex' : 'none'; }
+    function isLoggedIn() { return !!localStorage.getItem('ambusUser'); }
+    function getUsers() { return JSON.parse(localStorage.getItem('ambusUsers') || '{}'); }
+    function saveUsers(u) { localStorage.setItem('ambusUsers', JSON.stringify(u)); }
+
+    function createAccount(user, pass) {
+        if(!user) { alert('Enter a username to create'); return; }
+        const users = getUsers();
+        if(users[user]) { alert('Account already exists. Use Sign in.'); return; }
+        users[user] = { pass: btoa(pass||''), profile: { highScore:0, totalGames:0, bestCombo:0 } };
+        saveUsers(users);
+        doLogin(user, pass);
+        showMsg('actMessage', 'Account created and signed in', 'success');
+    }
+
+    function doLogin(user, pass) {
+        const users = getUsers();
+        if(users[user]) {
+            // check password (simple base64 compare for offline demo)
+            if(users[user].pass !== btoa(pass||'')) {
+                if(user !== 'Guest') { if(!confirm('Password does not match. Continue anyway as Guest?')) return; }
+            } else {
+                // load saved profile
+                if(users[user].profile) { gameProfile = users[user].profile; updateStatsUI(); }
+            }
+        } else {
+            if(user === 'Guest') {
+                users[user] = { pass: btoa(pass||''), profile: gameProfile };
+                saveUsers(users);
+            } else {
+                if(!confirm(`Account "${user}" not found. Create a new account now?`)) return;
+                createAccount(user, pass);
+                return;
+            }
+        }
+        const payload = { user: user || 'Guest', token: btoa((pass||'') + '::' + Date.now()) };
+        localStorage.setItem('ambusUser', JSON.stringify(payload));
+        showLoginOverlay(false);
+        document.title = `Ambus · ${payload.user}`;
+        updateDashboardForUser();
+    }
+
+    function doLogout() {
+        // persist current stats back to user record
+        try { const cur = JSON.parse(localStorage.getItem('ambusUser')||'null'); if(cur && cur.user) { const users = getUsers(); if(users[cur.user]) { users[cur.user].profile = gameProfile; saveUsers(users); } } } catch(e){}
+        localStorage.removeItem('ambusUser'); location.reload();
+    }
+
+    function updateDashboardForUser() {
+        // show a dashboard with play, level select, stats, and instruction options
+        try {
+            if (!isLoggedIn()) {
+                showLoginOverlay(true);
+                return;
+            }
+            const tabBar = document.querySelector('.tab-bar'); if(tabBar) tabBar.style.display = 'none';
+            ['activityTab','gravitylabTab','statsTab','gameTab'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+            const dashboard = document.getElementById('dashboardPanel');
+            if(dashboard) {
+                dashboard.style.display = 'block';
+                document.getElementById('dashLevelSelect').value = currentLevel;
+                document.getElementById('dashHighScore').innerText = gameProfile.highScore;
+                document.getElementById('dashTotalGames').innerText = gameProfile.totalGames;
+                document.getElementById('dashBestCombo').innerText = gameProfile.bestCombo;
+                document.getElementById('dashPlayBtn').onclick = () => {
+                    if (!isLoggedIn()) { showLoginOverlay(true); return; }
+                    dashboard.style.display = 'none';
+                    showPane('game');
+                    resetGame(); gameRunning=true; startGameLoop();
+                };
+                document.getElementById('dashLevelSelect').onchange = (e) => { currentLevel = parseInt(e.target.value); initGameLevel(); drawGame(); };
+                document.getElementById('dashStatsBtn').onclick = () => { dashboard.style.display='none'; showPane('stats'); };
+                document.getElementById('dashInstrBtn').onclick = () => { document.getElementById('instrOverlay').style.display='flex'; };
+                document.getElementById('dashLogout').onclick = () => doLogout();
+            }
+        } catch(e){ console.warn(e); }
+    }
+
+    function addBackToDashboard() {
+        if(document.getElementById('backToDashBtn')) return;
+        const hdr = document.querySelector('.game-header');
+        const btn = document.createElement('button'); btn.id='backToDashBtn'; btn.textContent='← Dashboard'; btn.style.marginLeft='12px';
+        btn.onclick = () => {
+            // stop game loop
+            stopGameLoop();
+            // hide game and other panes
+            ['gameTab','activityTab','gravitylabTab','statsTab'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+            // show dashboard
+            const dashPanel = document.getElementById('dashboardPanel'); if(dashPanel) dashPanel.style.display='flex';
+            // remove this button
+            btn.remove();
+        };
+        hdr.appendChild(btn);
+    }
+
+    function showPane(paneId) {
+        // hide dashboard and show requested pane, add back button
+        const dashPanel = document.getElementById('dashboardPanel'); if(dashPanel) dashPanel.style.display='none';
+        ['gameTab','activityTab','gravitylabTab','statsTab'].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+        const target = document.getElementById(paneId+'Tab') || document.getElementById(paneId);
+        if(target) target.style.display='block';
+        addBackToDashboard();
+        if(paneId==='stats') { renderActivities(); updateStatsUI(); }
+    }
+
+    function initLoginUI() {
+        showLoginOverlay(true);
+        const currentUser = JSON.parse(localStorage.getItem('ambusUser') || 'null');
+        if (currentUser && currentUser.user && currentUser.user !== 'Guest') {
+            document.getElementById('loginUser').value = currentUser.user;
+            document.title = `Ambus · ${currentUser.user}`;
+        }
+        document.getElementById('loginBtn').onclick = () => { const u=document.getElementById('loginUser').value.trim(); const p=document.getElementById('loginPass').value; if(!u){ alert('Enter a username or continue as guest'); return; } doLogin(u,p); };
+        document.getElementById('guestBtn').onclick = () => { doLogin('Guest',''); };
+        document.getElementById('createBtn').onclick = () => { const u=document.getElementById('loginUser').value.trim(); const p=document.getElementById('loginPass').value; createAccount(u,p); };
+        // close instructions overlay
+        const closeBtn = document.getElementById('closeInstrBtn'); if(closeBtn) closeBtn.onclick = () => { document.getElementById('instrOverlay').style.display='none'; };
+    }
+    window.addEventListener('load', initLoginUI);
+</script>
+</body>
+</html>
